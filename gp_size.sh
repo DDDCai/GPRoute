@@ -1,11 +1,11 @@
 #!/bin/bash
-client_program="/home/dc/distributed_dedup/client/build/client"
-shutdown_program="/home/dc/distributed_dedup/shutdown/build/shutdown"
-addr_file="/home/dc/evaluation/addr.txt"
-res_file="/home/dc/evaluation/res.txt"
-client_log="/home/dc/evaluation/client_log.txt"
-server_log="/home/dc/evaluation/server_log.txt"
-shutdown_log="/home/dc/evaluation/shutdown_log.txt"
+client_program="/home/xx/client/build/client"
+shutdown_program="/home/xx/shutdown/build/shutdown"
+addr_file="/home/xx/addr.txt"
+res_file="/home/xx/res.txt"
+client_log="/home/xx/client_log.txt"
+server_log="/home/xx/server_log.txt"
+shutdown_log="/home/xx/shutdown_log.txt"
 
 touch $res_file
 touch $client_log
@@ -14,7 +14,6 @@ touch $shutdown_log
 
 dataset=macos
 chunk_size=16kb
-homes=(0)
 node_num=32
 feature_num=8
 exp_seg_size=512
@@ -37,7 +36,7 @@ function wait_and_shut() {
             sleep 30
         fi
     done
-    cd /home/dc/distributed_dedup/shutdown/build
+    cd /home/xx/shutdown/build
     rm CMakeCache.txt
     cmake .. -DNODE_NUM=$1
     make
@@ -51,17 +50,15 @@ do
     for ((n=0; n<${#gp_part[@]}; n++))
     do
         echo "===========$(date +%Y-%m-%d\ %H:%M:%S)===========" >> $server_log
-        ssh dc@219.223.251.67 "cd /home/dc/dis_dedup/server/build ; rm CMakeCache.txt ; /snap/bin/cmake .. -DFEATURE_NUM=$feature_num -DROUTE_METHOD=$route_method -DHIT_THRES=$hit_thres -DGP_SIZE=${gp_size[$m]} ; make ; bash run.sh $node_num" >> $server_log &
+        ssh xx@219.xxx.xxx.67 "cd /home/xx/server/build ; rm CMakeCache.txt ; /snap/bin/cmake .. -DFEATURE_NUM=$feature_num -DROUTE_METHOD=$route_method -DHIT_THRES=$hit_thres -DGP_SIZE=${gp_size[$m]} ; make ; bash run.sh $node_num" >> $server_log &
         sleep 5
-        cd /home/dc/distributed_dedup/client/build
+        cd /home/xx/client/build
         rm CMakeCache.txt
         cmake .. -DFEATURE_NUM=$feature_num -DROUTE_METHOD=$route_method -DHIT_THRES=$hit_thres -DEXP_SEGMENT_SIZE=$exp_seg_size -DFEATURE_METHOD=$feature_method -DNODE_NUM=$node_num -DSKEW_THRES=$skew_thres -DSSDEDUP=$ssdedup -DLCACHE_SIZE=$lcache_size -DLC_HIT_THRES=$lc_hit_thres -DGP_SIZE=${gp_size[$m]} -DGP_PART=${gp_part[$n]}
         make
         echo "===========$(date +%Y-%m-%d\ %H:%M:%S)===========" >> $client_log
-        for ((i=0; i<${#homes[@]}; i++))
-        do 
-            $client_program $addr_file /data/$dataset/$chunk_size/${homes[$i]} $res_file >> $client_log &
-        done
+        $client_program $addr_file /data/fsl/$dataset/ $res_file >> $client_log &
+        
         sleep 10
         echo "[dataset]         :   $dataset" >> $res_file
         echo "[chunk_size]      :   $chunk_size" >> $res_file
